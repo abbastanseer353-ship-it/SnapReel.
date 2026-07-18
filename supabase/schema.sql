@@ -21,6 +21,11 @@ create table if not exists public.videos (
   video_url text not null,
   thumbnail_url text,
   caption text,
+  music text,
+  link text,
+  location text,
+  visibility text not null default 'public' check (visibility in ('public', 'followers')),
+  allow_comments boolean not null default true,
   created_at timestamptz not null default now()
 );
 create index if not exists videos_user_id_idx on public.videos (user_id);

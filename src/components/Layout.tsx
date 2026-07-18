@@ -3,7 +3,7 @@ import { NavLink, Outlet } from 'react-router-dom'
 const navItems = [
   { to: '/', label: 'Home', icon: '🏠', end: true },
   { to: '/earning', label: 'Earning', icon: '💼', end: false },
-  { to: '/upload', label: '', icon: '+', end: false, upload: true },
+  { to: '/create', label: '', icon: '+', end: false, upload: true },
   { to: '/messages', label: 'Inbox', icon: '💬', end: false },
   { to: '/profile', label: 'Me', icon: '👤', end: false },
 ]

@@ -66,7 +66,7 @@ export default function Feed() {
       <div className="center-fill">
         <h2>No videos yet 🎬</h2>
         <p className="muted">Be the first to share something!</p>
-        <Link to="/upload" className="btn">
+        <Link to="/create" className="btn">
           Upload a video
         </Link>
       </div>

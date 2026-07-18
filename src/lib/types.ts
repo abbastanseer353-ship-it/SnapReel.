@@ -17,6 +17,11 @@ export interface Video {
   video_url: string
   thumbnail_url: string | null
   caption: string | null
+  music?: string | null
+  link?: string | null
+  location?: string | null
+  visibility?: 'public' | 'followers'
+  allow_comments?: boolean
   created_at: string
   // joined / computed fields
   profile?: Profile
