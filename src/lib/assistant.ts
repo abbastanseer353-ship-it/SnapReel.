@@ -14,8 +14,8 @@ export const topics: AssistantTopic[] = [
   {
     id: 'overview',
     keywords: [
-      'app', 'about', 'kya hai', 'kya cheez', 'overview', 'kaam', 'features',
-      'kya kya', 'hunar', 'introduction', 'intro', 'batao app',
+      'app', 'about', 'overview', 'features', 'kya kya', 'hunar',
+      'introduction', 'intro', 'batao app', 'app kya', 'app ke bare',
     ],
     answer:
       'Hunar ek TikTok-jaisi video app hai jis mein ek "Earning" marketplace bhi hai. Aap videos bana/upload kar sakte hain, like/comment/follow kar sakte hain, aur "Earning" section mein client/worker skills share kar ke chat kar sakte hain. Neeche 5 tabs hain: Home (feed), Earning, + (video banao), Inbox (chat), aur Me (profile).',
@@ -32,8 +32,9 @@ export const topics: AssistantTopic[] = [
   {
     id: 'create',
     keywords: [
-      'banao', 'record', 'shoot', 'camera', 'create', 'upload video', 'plus',
-      '+', 'video banana', 'studio', 'creator', 'nayi video', 'record page',
+      'banao', 'banau', 'banani', 'record', 'shoot', 'camera', 'create',
+      'upload video', 'plus', 'video banana', 'studio', 'creator', 'nayi video',
+      'record page',
     ],
     answer:
       'Neeche beech wala + button dabao to Creator Studio khulta hai. Wahan camera se record karo ya gallery se video import karo, left/right swipe kar ke filters lagao, aur music choose karo. Video ban-ne ke baad Edit page khulta hai.',
@@ -160,7 +161,7 @@ export function askAssistant(question: string): string {
   for (const topic of topics) {
     let score = 0
     for (const kw of topic.keywords) {
-      const k = normalize(kw)
+      const k = normalize(kw).trim()
       if (!k) continue
       if (q.includes(' ' + k + ' ') || q.includes(k)) {
         score += k.includes(' ') ? 2 : 1
