@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { markConversationSeen } from '../lib/chatState'
+import { formatChatTime } from '../lib/time'
 import type { Message, Profile } from '../lib/types'
 
 export default function Chat() {
@@ -34,6 +36,7 @@ export default function Chat() {
       setOther((prof as Profile) ?? null)
       setMessages((msgs as Message[]) ?? [])
       setLoading(false)
+      markConversationSeen(user.id, userId)
       setTimeout(scrollToBottom, 50)
     }
     load()
@@ -50,6 +53,7 @@ export default function Chat() {
             (m.sender_id === userId && m.receiver_id === user.id)
           if (!involved) return
           setMessages((prev) => (prev.some((x) => x.id === m.id) ? prev : [...prev, m]))
+          if (m.receiver_id === user.id) markConversationSeen(user.id, userId)
           setTimeout(scrollToBottom, 50)
         }
       )
@@ -118,15 +122,27 @@ export default function Chat() {
                 key={m.id}
                 style={{
                   alignSelf: mine ? 'flex-end' : 'flex-start',
-                  background: mine ? 'var(--accent)' : 'var(--surface-2)',
-                  color: '#fff',
-                  padding: '8px 12px',
-                  borderRadius: 14,
                   maxWidth: '75%',
-                  fontSize: 14,
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: mine ? 'flex-end' : 'flex-start',
+                  gap: 2,
                 }}
               >
-                {m.content}
+                <div
+                  style={{
+                    background: mine ? 'var(--accent)' : 'var(--surface-2)',
+                    color: '#fff',
+                    padding: '8px 12px',
+                    borderRadius: 14,
+                    fontSize: 14,
+                  }}
+                >
+                  {m.content}
+                </div>
+                <span className="muted" style={{ fontSize: 10 }}>
+                  {formatChatTime(m.created_at)}
+                </span>
               </div>
             )
           })

@@ -2,11 +2,14 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
+import { unreadByConversation } from '../lib/chatState'
+import { formatChatTime } from '../lib/time'
 import type { Message, Profile } from '../lib/types'
 
 interface Convo {
   other: Profile
   last: Message
+  unread: number
 }
 
 export default function Messages() {
@@ -43,12 +46,14 @@ export default function Messages() {
         .in('id', otherIds)
       const profMap = new Map((profiles as Profile[] ?? []).map((p) => [p.id, p]))
 
+      const unreadMap = unreadByConversation(messages, user.id)
+
       const list: Convo[] = otherIds
         .map((id) => {
           const other = profMap.get(id)
           const last = lastByOther.get(id)
           if (!other || !last) return null
-          return { other, last }
+          return { other, last, unread: unreadMap.get(id) ?? 0 }
         })
         .filter((c): c is Convo => c !== null)
 
@@ -94,20 +99,27 @@ export default function Messages() {
                 )}
               </div>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ fontWeight: 600 }}>@{c.other.username}</div>
+                <div style={{ display: 'flex', justifyContent: 'space-between', gap: 8 }}>
+                  <span style={{ fontWeight: 600 }}>@{c.other.username}</span>
+                  <span className="muted" style={{ fontSize: 11 }}>
+                    {formatChatTime(c.last.created_at)}
+                  </span>
+                </div>
                 <div
-                  className="muted"
+                  className={c.unread > 0 ? '' : 'muted'}
                   style={{
                     fontSize: 13,
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     textOverflow: 'ellipsis',
+                    fontWeight: c.unread > 0 ? 600 : 400,
                   }}
                 >
                   {c.last.sender_id === user?.id ? 'You: ' : ''}
                   {c.last.content}
                 </div>
               </div>
+              {c.unread > 0 && <span className="unread-pill">{c.unread}</span>}
             </Link>
           ))}
         </div>

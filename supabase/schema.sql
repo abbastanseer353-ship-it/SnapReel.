@@ -81,6 +81,16 @@ create table if not exists public.messages (
 );
 create index if not exists messages_pair_idx on public.messages (sender_id, receiver_id, created_at);
 
+-- ---------- ai_messages (profile AI guide) ----------
+create table if not exists public.ai_messages (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null references public.profiles (id) on delete cascade,
+  role text not null check (role in ('user', 'assistant')),
+  content text not null,
+  created_at timestamptz not null default now()
+);
+create index if not exists ai_messages_user_idx on public.ai_messages (user_id, created_at);
+
 -- ============================================================
 -- Row Level Security
 -- ============================================================
@@ -91,6 +101,7 @@ alter table public.comments enable row level security;
 alter table public.follows enable row level security;
 alter table public.skill_posts enable row level security;
 alter table public.messages enable row level security;
+alter table public.ai_messages enable row level security;
 
 -- profiles: readable by everyone, writable by owner
 drop policy if exists "profiles_select" on public.profiles;
@@ -147,6 +158,17 @@ create policy "messages_select" on public.messages
 drop policy if exists "messages_insert" on public.messages;
 create policy "messages_insert" on public.messages
   for insert with check (auth.uid() = sender_id);
+
+-- ai_messages: private to the owner
+drop policy if exists "ai_messages_select" on public.ai_messages;
+create policy "ai_messages_select" on public.ai_messages
+  for select using (auth.uid() = user_id);
+drop policy if exists "ai_messages_insert" on public.ai_messages;
+create policy "ai_messages_insert" on public.ai_messages
+  for insert with check (auth.uid() = user_id);
+drop policy if exists "ai_messages_delete" on public.ai_messages;
+create policy "ai_messages_delete" on public.ai_messages
+  for delete using (auth.uid() = user_id);
 
 -- ============================================================
 -- Auto-create a profile row when a new auth user signs up

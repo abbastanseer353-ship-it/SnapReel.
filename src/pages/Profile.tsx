@@ -3,10 +3,12 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import type { Profile as ProfileType, Video } from '../lib/types'
+import { deleteOfflineVideo, listOfflineVideos } from '../lib/offline'
+import type { OfflineVideo } from '../lib/offline'
 
 export default function Profile() {
   const { userId } = useParams()
-  const { user, signOut, refreshProfile } = useAuth()
+  const { user, refreshProfile } = useAuth()
   const navigate = useNavigate()
 
   const targetId = userId ?? user?.id ?? ''
@@ -19,6 +21,7 @@ export default function Profile() {
   const [isFollowing, setIsFollowing] = useState(false)
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(false)
+  const [tab, setTab] = useState<'videos' | 'offline'>('videos')
 
   const load = useCallback(async () => {
     if (!targetId) return
@@ -98,9 +101,24 @@ export default function Profile() {
       <div className="topbar">
         <h1>@{profile.username}</h1>
         {isMe && (
-          <button className="btn-outline" style={{ padding: '6px 12px', borderRadius: 8 }} onClick={signOut}>
-            Log out
-          </button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <button
+              aria-label="Ask AI"
+              title="Ask AI"
+              className="icon-btn"
+              onClick={() => navigate('/assistant')}
+            >
+              🤖
+            </button>
+            <button
+              aria-label="Settings"
+              title="Settings"
+              className="icon-btn"
+              onClick={() => navigate('/settings')}
+            >
+              ⚙️
+            </button>
+          </div>
         )}
       </div>
 
@@ -136,9 +154,14 @@ export default function Profile() {
         </div>
 
         {isMe ? (
-          <button className="btn-ghost btn" style={{ width: '100%' }} onClick={() => setEditing(true)}>
-            Edit profile
-          </button>
+          <div style={{ display: 'flex', gap: 8 }}>
+            <button className="btn-ghost btn" style={{ flex: 1 }} onClick={() => setEditing(true)}>
+              Edit profile
+            </button>
+            <button className="btn btn-outline" style={{ flex: 1 }} onClick={() => navigate('/assistant')}>
+              🤖 Ask AI
+            </button>
+          </div>
         ) : (
           <div style={{ display: 'flex', gap: 8 }}>
             <button className="btn" style={{ flex: 1 }} onClick={toggleFollow}>
@@ -155,31 +178,130 @@ export default function Profile() {
         )}
       </div>
 
-      <div
-        style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(3, 1fr)',
-          gap: 2,
-          padding: 2,
-        }}
-      >
-        {videos.map((v) => (
-          <div key={v.id} style={{ position: 'relative', aspectRatio: '9 / 14', background: '#000' }}>
-            <video
-              src={v.video_url}
-              poster={v.thumbnail_url ?? undefined}
-              muted
-              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-            />
-          </div>
-        ))}
-      </div>
-      {videos.length === 0 && (
-        <p className="muted" style={{ textAlign: 'center', padding: 24 }}>
-          No videos yet.
-        </p>
+      {isMe && (
+        <div className="profile-tabs">
+          <button
+            className={`profile-tab ${tab === 'videos' ? 'active' : ''}`}
+            onClick={() => setTab('videos')}
+          >
+            ▦ Videos
+          </button>
+          <button
+            className={`profile-tab ${tab === 'offline' ? 'active' : ''}`}
+            onClick={() => setTab('offline')}
+          >
+            📥 Offline
+          </button>
+        </div>
       )}
+
+      {(!isMe || tab === 'videos') && (
+        <>
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(3, 1fr)',
+              gap: 2,
+              padding: 2,
+            }}
+          >
+            {videos.map((v) => (
+              <div key={v.id} style={{ position: 'relative', aspectRatio: '9 / 14', background: '#000' }}>
+                <video
+                  src={v.video_url}
+                  poster={v.thumbnail_url ?? undefined}
+                  muted
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                />
+              </div>
+            ))}
+          </div>
+          {videos.length === 0 && (
+            <p className="muted" style={{ textAlign: 'center', padding: 24 }}>
+              No videos yet.
+            </p>
+          )}
+        </>
+      )}
+
+      {isMe && tab === 'offline' && <OfflineList />}
     </>
+  )
+}
+
+function OfflineList() {
+  const [items, setItems] = useState<OfflineVideo[]>([])
+  const [urls, setUrls] = useState<Record<string, string>>({})
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    let created: string[] = []
+    listOfflineVideos().then((list) => {
+      setItems(list)
+      const map: Record<string, string> = {}
+      for (const v of list) {
+        const u = URL.createObjectURL(v.blob)
+        map[v.id] = u
+        created.push(u)
+      }
+      setUrls(map)
+      setLoading(false)
+    })
+    return () => {
+      created.forEach((u) => URL.revokeObjectURL(u))
+    }
+  }, [])
+
+  const remove = async (id: string) => {
+    await deleteOfflineVideo(id)
+    setItems((prev) => prev.filter((v) => v.id !== id))
+  }
+
+  if (loading) {
+    return (
+      <div className="center-fill" style={{ minHeight: '30vh' }}>
+        <div className="spinner" />
+      </div>
+    )
+  }
+
+  if (items.length === 0) {
+    return (
+      <p className="muted" style={{ textAlign: 'center', padding: 24, fontSize: 13 }}>
+        Abhi koi offline video nahi. Jo videos aap feed par dekhenge woh yahan apne aap save
+        ho jayengi — internet na ho to bhi dekh sakenge.
+      </p>
+    )
+  }
+
+  return (
+    <div style={{ padding: 8, display: 'flex', flexDirection: 'column', gap: 10 }}>
+      <p className="muted" style={{ fontSize: 12, padding: '0 4px' }}>
+        {items.length} video{items.length > 1 ? 's' : ''} offline saved
+      </p>
+      {items.map((v) => (
+        <div key={v.id} className="offline-card">
+          <video
+            src={urls[v.id]}
+            poster={v.thumbnail_url ?? undefined}
+            controls
+            playsInline
+            className="offline-video"
+          />
+          <div className="offline-meta">
+            <div style={{ minWidth: 0 }}>
+              <div style={{ fontWeight: 600, fontSize: 14 }}>@{v.username}</div>
+              {v.caption && (
+                <div className="muted offline-caption">{v.caption}</div>
+              )}
+            </div>
+            <button className="offline-remove" onClick={() => remove(v.id)}>
+              Remove
+            </button>
+          </div>
+        </div>
+      ))}
+    </div>
   )
 }
 

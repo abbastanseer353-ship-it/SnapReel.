@@ -4,6 +4,7 @@ import { supabase } from '../lib/supabase'
 import { useAuth } from '../context/AuthContext'
 import type { Video } from '../lib/types'
 import CommentsSheet from './CommentsSheet'
+import { cacheVideoForOffline } from '../lib/offline'
 
 export default function VideoCard({ video }: { video: Video }) {
   const { user } = useAuth()
@@ -15,27 +16,36 @@ export default function VideoCard({ video }: { video: Video }) {
   const [showComments, setShowComments] = useState(false)
   const [playing, setPlaying] = useState(false)
 
-  // Auto play/pause based on visibility
+  // Auto play/pause based on visibility + cache watched video for offline
   useEffect(() => {
     const el = containerRef.current
     const vid = videoRef.current
     if (!el || !vid) return
+
+    let cacheTimer: ReturnType<typeof setTimeout> | undefined
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           vid.play().catch(() => undefined)
           setPlaying(true)
+          cacheTimer = setTimeout(() => {
+            cacheVideoForOffline(video).catch(() => undefined)
+          }, 2500)
         } else {
           vid.pause()
           setPlaying(false)
+          if (cacheTimer) clearTimeout(cacheTimer)
         }
       },
       { threshold: 0.6 }
     )
     observer.observe(el)
-    return () => observer.disconnect()
-  }, [])
+    return () => {
+      observer.disconnect()
+      if (cacheTimer) clearTimeout(cacheTimer)
+    }
+  }, [video])
 
   const togglePlay = () => {
     const vid = videoRef.current

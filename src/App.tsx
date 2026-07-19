@@ -9,6 +9,8 @@ import Profile from './pages/Profile'
 import Earning from './pages/Earning'
 import Messages from './pages/Messages'
 import Chat from './pages/Chat'
+import Settings from './pages/Settings'
+import Assistant from './pages/Assistant'
 import Record from './pages/create/Record'
 import Edit from './pages/create/Edit'
 import Post from './pages/create/Post'
@@ -60,6 +62,8 @@ export default function App() {
         <Route path="/chat/:userId" element={<Chat />} />
         <Route path="/profile" element={<Profile />} />
         <Route path="/profile/:userId" element={<Profile />} />
+        <Route path="/settings" element={<Settings />} />
+        <Route path="/assistant" element={<Assistant />} />
       </Route>
       <Route
         element={
