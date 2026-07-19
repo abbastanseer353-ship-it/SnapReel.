@@ -55,19 +55,18 @@ export default function AuthPage() {
     <div className="app-shell">
       <div className="center-fill" style={{ minHeight: '100vh' }}>
         <div style={{ width: '100%', maxWidth: 360 }}>
-          <h1
+          <img
+            src="/logo.png"
+            alt="Hunar"
+            width={96}
+            height={96}
             style={{
-              fontSize: 34,
-              fontWeight: 800,
-              textAlign: 'center',
-              background: 'linear-gradient(90deg, var(--accent-2), var(--accent))',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              marginBottom: 6,
+              display: 'block',
+              margin: '0 auto 14px',
+              borderRadius: 22,
+              boxShadow: '0 10px 30px rgba(108,28,255,0.35)',
             }}
-          >
-            Hunar
-          </h1>
+          />
           <p className="muted" style={{ textAlign: 'center', marginBottom: 24 }}>
             Watch. Share. Earn with your skills.
           </p>
