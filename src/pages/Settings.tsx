@@ -1,5 +1,7 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
+import { useInstallPrompt } from '../lib/pwa'
 
 const guide: { icon: string; title: string; body: string }[] = [
   {
@@ -42,6 +44,21 @@ const guide: { icon: string; title: string; body: string }[] = [
 export default function Settings() {
   const navigate = useNavigate()
   const { profile, signOut } = useAuth()
+  const { canInstall, installed, promptInstall, isIos } = useInstallPrompt()
+  const [installMsg, setInstallMsg] = useState<string | null>(null)
+
+  const handleInstall = async () => {
+    const outcome = await promptInstall()
+    if (outcome === 'unavailable') {
+      setInstallMsg(
+        isIos
+          ? 'iPhone/iPad: neeche Share (⬆️) button dabao, phir "Add to Home Screen" chuno.'
+          : 'Browser menu (⋮) kholo aur "Install app" / "Add to Home screen" chuno.'
+      )
+    } else if (outcome === 'dismissed') {
+      setInstallMsg('Install cancel ho gaya. Jab chaho dobara try karo.')
+    }
+  }
 
   return (
     <>
@@ -103,6 +120,37 @@ export default function Settings() {
               <span className="muted">Backend</span>
               <span>Supabase + Cloudinary</span>
             </div>
+          </div>
+        </section>
+
+        <section className="settings-group">
+          <h3 className="settings-title">App install karo (Add to Home screen)</h3>
+          <div className="settings-card">
+            <div className="guide-item">
+              <div style={{ fontSize: 22 }}>📲</div>
+              <div>
+                <div style={{ fontWeight: 600, marginBottom: 2 }}>
+                  {installed ? 'Hunar install ho chuki hai ✓' : 'Hunar ko phone/PC par install karo'}
+                </div>
+                <div className="muted" style={{ fontSize: 13, lineHeight: 1.4 }}>
+                  App ki tarah home screen par icon banega — browser ke bina khulegi.
+                </div>
+              </div>
+            </div>
+            {!installed && (
+              <button
+                className="btn"
+                style={{ width: '100%', marginTop: 8 }}
+                onClick={handleInstall}
+              >
+                {canInstall ? '📲 Install app' : '📲 Install kaise karein?'}
+              </button>
+            )}
+            {installMsg && (
+              <div className="muted" style={{ fontSize: 13, marginTop: 8, lineHeight: 1.4 }}>
+                {installMsg}
+              </div>
+            )}
           </div>
         </section>
 
