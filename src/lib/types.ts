@@ -8,6 +8,81 @@ export interface Profile {
   bio: string | null
   role: UserRole
   skills: string[] | null
+  verified?: boolean
+  is_admin?: boolean
+  created_at: string
+}
+
+export type NotificationType =
+  | 'like'
+  | 'comment'
+  | 'follow'
+  | 'message'
+  | 'payment'
+  | 'review'
+  | 'system'
+
+export interface AppNotification {
+  id: string
+  user_id: string
+  actor_id: string | null
+  type: NotificationType
+  video_id: string | null
+  text: string | null
+  read: boolean
+  created_at: string
+  actor?: Profile
+}
+
+export interface Review {
+  id: string
+  reviewer_id: string
+  reviewee_id: string
+  rating: number
+  comment: string | null
+  created_at: string
+  reviewer?: Profile
+}
+
+export interface PortfolioItem {
+  id: string
+  user_id: string
+  title: string
+  description: string | null
+  image_url: string | null
+  link: string | null
+  created_at: string
+}
+
+export type PaymentMethod = 'jazzcash' | 'easypaisa' | 'telenor' | 'bank' | 'other'
+export type PaymentStatus = 'submitted' | 'held' | 'released' | 'rejected'
+
+export interface Payment {
+  id: string
+  client_id: string
+  worker_id: string
+  skill_post_id: string | null
+  amount: number
+  method: PaymentMethod
+  screenshot_url: string | null
+  note: string | null
+  status: PaymentStatus
+  created_at: string
+  updated_at: string
+  client?: Profile
+  worker?: Profile
+}
+
+export interface Sound {
+  id: string
+  title: string
+  artist: string | null
+  audio_url: string | null
+  cover_url: string | null
+  duration: number | null
+  source_video_id: string | null
+  created_by: string | null
+  uses_count: number
   created_at: string
 }
 

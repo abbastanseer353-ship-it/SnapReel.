@@ -63,3 +63,40 @@ export async function uploadVideo(
     xhr.send(formData)
   })
 }
+
+/**
+ * Uploads an image (payment screenshot, portfolio image, avatar) to Cloudinary
+ * using the same unsigned preset via the image endpoint.
+ */
+export async function uploadImage(
+  file: File,
+  onProgress?: (percent: number) => void
+): Promise<string> {
+  if (!isCloudinaryConfigured) {
+    throw new Error('Cloudinary not configured.')
+  }
+
+  const endpoint = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('upload_preset', uploadPreset)
+
+  return new Promise<string>((resolve, reject) => {
+    const xhr = new XMLHttpRequest()
+    xhr.open('POST', endpoint)
+    xhr.upload.onprogress = (event) => {
+      if (event.lengthComputable && onProgress) {
+        onProgress(Math.round((event.loaded / event.total) * 100))
+      }
+    }
+    xhr.onload = () => {
+      if (xhr.status >= 200 && xhr.status < 300) {
+        resolve(JSON.parse(xhr.responseText).secure_url as string)
+      } else {
+        reject(new Error(`Cloudinary image upload failed: ${xhr.status} ${xhr.responseText}`))
+      }
+    }
+    xhr.onerror = () => reject(new Error('Network error during Cloudinary upload'))
+    xhr.send(formData)
+  })
+}
