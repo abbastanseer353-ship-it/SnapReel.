@@ -5,7 +5,6 @@ import { useAuth } from '../context/AuthContext'
 import type { Video } from '../lib/types'
 import CommentsSheet from './CommentsSheet'
 import { cacheVideoForOffline } from '../lib/offline'
-
 export default function VideoCard({ video }: { video: Video }) {
   const { user } = useAuth()
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -15,15 +14,12 @@ export default function VideoCard({ video }: { video: Video }) {
   const [commentsCount, setCommentsCount] = useState(video.comments_count ?? 0)
   const [showComments, setShowComments] = useState(false)
   const [playing, setPlaying] = useState(false)
-
   // Auto play/pause based on visibility + cache watched video for offline
   useEffect(() => {
     const el = containerRef.current
     const vid = videoRef.current
     if (!el || !vid) return
-
     let cacheTimer: ReturnType<typeof setTimeout> | undefined
-
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
@@ -46,7 +42,6 @@ export default function VideoCard({ video }: { video: Video }) {
       if (cacheTimer) clearTimeout(cacheTimer)
     }
   }, [video])
-
   const togglePlay = () => {
     const vid = videoRef.current
     if (!vid) return
@@ -58,7 +53,6 @@ export default function VideoCard({ video }: { video: Video }) {
       setPlaying(false)
     }
   }
-
   const toggleLike = async () => {
     if (!user) return
     if (liked) {
@@ -71,7 +65,6 @@ export default function VideoCard({ video }: { video: Video }) {
       await supabase.from('likes').insert({ video_id: video.id, user_id: user.id })
     }
   }
-
   const username = video.profile?.username ?? 'user'
 
   return (
@@ -93,11 +86,10 @@ export default function VideoCard({ video }: { video: Video }) {
         poster={video.thumbnail_url ?? undefined}
         loop
         playsInline
-        muted
+        muted={!playing}
         onClick={togglePlay}
         style={{ width: '100%', height: '100%', objectFit: 'contain' }}
       />
-
       {!playing && (
         <div
           onClick={togglePlay}
@@ -115,7 +107,6 @@ export default function VideoCard({ video }: { video: Video }) {
           ▶
         </div>
       )}
-
       {/* Right action rail */}
       <div
         style={{
@@ -140,23 +131,19 @@ export default function VideoCard({ video }: { video: Video }) {
             username[0]?.toUpperCase()
           )}
         </Link>
-
         <button onClick={toggleLike} style={rail}>
           <span style={{ fontSize: 30 }}>{liked ? '❤️' : '🤍'}</span>
           <span style={railLabel}>{likes}</span>
         </button>
-
         <button onClick={() => setShowComments(true)} style={rail}>
           <span style={{ fontSize: 30 }}>💬</span>
           <span style={railLabel}>{commentsCount}</span>
         </button>
-
         <Link to={`/chat/${video.user_id}`} style={rail}>
           <span style={{ fontSize: 28 }}>✉️</span>
           <span style={railLabel}>Chat</span>
         </Link>
       </div>
-
       {/* Bottom caption */}
       <div
         style={{
@@ -174,7 +161,6 @@ export default function VideoCard({ video }: { video: Video }) {
           <p style={{ fontSize: 14, marginTop: 6, lineHeight: 1.35 }}>{video.caption}</p>
         )}
       </div>
-
       {showComments && (
         <CommentsSheet
           videoId={video.id}
@@ -185,14 +171,12 @@ export default function VideoCard({ video }: { video: Video }) {
     </div>
   )
 }
-
 const rail: React.CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   gap: 2,
 }
-
 const railLabel: React.CSSProperties = {
   fontSize: 12,
   color: '#fff',
