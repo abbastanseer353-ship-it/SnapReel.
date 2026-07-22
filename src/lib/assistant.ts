@@ -7,6 +7,88 @@ export interface AssistantTopic {
 }
 
 /**
+ * Video creation tips and strategies for content creators
+ */
+export const videoTips = [
+  {
+    id: 'trending_formats',
+    title: 'Trending Video Formats',
+    tips: [
+      'Duets & Stitches: Respond to other creators\' videos',
+      'POV (Point of View): Show perspective-based stories',
+      'Transitions: Use fast cuts or smooth transitions between scenes',
+      'Before & After: Show transformation or results',
+      'Challenges: Participate in trending challenges',
+      'Storytelling: Tell a short story in 15-30 seconds',
+    ]
+  },
+  {
+    id: 'editing_ideas',
+    title: 'Editing & Visual Tips',
+    tips: [
+      'Fast cuts on beat: Edit to music rhythm',
+      'Text overlays: Add context, humor, or captions',
+      'Color grading: Use consistent color filters',
+      'Speed ramping: Speed up/slow down for emphasis',
+      'Jump cuts: Quick scene changes for energy',
+      'B-roll: Mix close-ups with wide shots',
+    ]
+  },
+  {
+    id: 'audio_music',
+    title: 'Audio & Music Strategy',
+    tips: [
+      'Use trending sounds: Check what\'s popular',
+      'Perfect timing: Start sound at the right moment',
+      'Audio layering: Mix music with voice/sfx',
+      'Trending songs: Pick songs on the rise',
+      'Sound effects: Add impact to transitions',
+      'Voice-over: Clear, energetic narration',
+    ]
+  },
+  {
+    id: 'hashtag_strategy',
+    title: 'Hashtag & Caption Tips',
+    tips: [
+      'Mix popular + niche: 3-5 trending + 2-3 specific',
+      'First line matters: Hook viewers immediately',
+      'Call to action: Ask questions or request interaction',
+      'Emojis: Use 2-3 relevant emojis in caption',
+      'Trending hashtags: #FYP, #ForYou, #viral',
+      'Consistency: Use brand hashtags regularly',
+    ]
+  },
+  {
+    id: 'engagement_boost',
+    title: 'Boost Engagement & Views',
+    tips: [
+      'Post at peak hours: Evening 6-10 PM',
+      'Consistency: Post 3-5 videos per week',
+      'Watch time: Keep viewers watching till end',
+      'Reactions: Strong opening shot = more clicks',
+      'Series: Create recurring content themes',
+      'Community: Respond to comments & messages',
+    ]
+  }
+]
+
+/**
+ * Pre-written hashtag suggestions for different content types
+ */
+export const hashtagSuggestions: Record<string, string[]> = {
+  dance: ['#dancevideo', '#trendingraindance', '#dancechallenge', '#viralvideo', '#foryou'],
+  comedy: ['#comedyvideos', '#funny', '#haha', '#trending', '#foryoupage'],
+  lifestyle: ['#lifestyle', '#dayinmylife', '#vlog', '#viralvideo', '#trending'],
+  music: ['#musicvideo', '#singerlife', '#originalmusic', '#musicartist', '#foryou'],
+  education: ['#educational', '#learntips', '#knowledge', '#useful', '#howto'],
+  cooking: ['#recipevideo', '#cookingvideos', '#foodtiktok', '#easyrecipe', '#viral'],
+  fitness: ['#fitnessvideo', '#workouttrends', '#fitnessgains', '#motivation', '#viral'],
+  art: ['#artvideos', '#artistcommunity', '#creative', '#artprocess', '#viral'],
+  prank: ['#prankvideo', '#funny', '#haha', '#trending', '#viralvideo'],
+  motivation: ['#motivational', '#inspiration', '#quotes', '#positive', '#trending'],
+}
+
+/**
  * Built-in guide assistant knowledge base. It answers user questions about
  * what the app does and where each feature lives. Works fully offline (no
  * external API needed). Matching is keyword/intent based and supports English,
@@ -22,7 +104,7 @@ export const topics: AssistantTopic[] = [
       'introduction', 'intro', 'batao app', 'app kya', 'app ke bare',
     ],
     answer:
-      'Hunar ek TikTok-jaisi video app hai jis mein ek "Earning" marketplace bhi hai. Aap videos bana/upload kar sakte hain, like/comment/follow kar sakte hain, aur "Earning" section mein client/worker ban sakte hain.',
+      'Hunar ek TikTok-jaisi video app hai jis mein ek "Earning" marketplace bhi hai. Aap videos bana/upload kar sakte hain, like/comment/follow kar sakte hain, aur "Earning" section mein client/worker ka kaam dhund sakte hain.',
   },
   {
     id: 'feed',
@@ -50,7 +132,7 @@ export const topics: AssistantTopic[] = [
       'color', 'black white', 'vintage', 'b&w',
     ],
     answer:
-      'Record aur Edit dono par filters hain (Normal, Vivid, Warm, Cool, Vintage, B&W, Noir, Fade, Dramatic, Dreamy, Invert). Snapchat jaisa left/right swipe ya neeche chips par tap kar ke filter lagao.',
+      'Record aur Edit dono par filters hain (Normal, Vivid, Warm, Cool, Vintage, B&W, Noir, Fade, Dramatic, Dreamy, Invert). Snapchat jaisa left/right swipe ya neeche chips par tap kar ke filter change kar sakte ho.',
   },
   {
     id: 'music',
@@ -186,10 +268,28 @@ export async function getAssistantResponse(userId: string, question: string): Pr
   return getAiResponse(userId, question)
 }
 
+/**
+ * Get video creation tips for a specific category
+ */
+export function getVideoTips(category: string): string[] {
+  const tip = videoTips.find(t => 
+    t.id.toLowerCase() === category.toLowerCase() ||
+    t.title.toLowerCase().includes(category.toLowerCase())
+  )
+  return tip?.tips ?? []
+}
+
+/**
+ * Get hashtag suggestions for a content type
+ */
+export function getHashtags(contentType: string): string[] {
+  return hashtagSuggestions[contentType.toLowerCase()] ?? hashtagSuggestions['trending'] ?? []
+}
+
 export const suggestedQuestions = [
   'Video kaise banaun?',
   'Filters aur music kaise lagaun?',
-  'Earning section kya hai?',
-  'Offline videos kahan milti hain?',
-  'Chat kaise karun?',
+  'Viral hone ke liye kya karna chahiye?',
+  'Editing mein konse tips dena chahiye?',
+  'Best hashtags kaun se hain?',
 ]
