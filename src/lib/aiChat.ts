@@ -7,7 +7,6 @@ export interface AiMessage {
   created_at?: string;
 }
 
-// Load chat history from Supabase database
 export async function loadAiChat(userId: string): Promise<AiMessage[]> {
   try {
     const { data, error } = await supabase
@@ -17,7 +16,7 @@ export async function loadAiChat(userId: string): Promise<AiMessage[]> {
       .order('created_at', { ascending: true });
 
     if (error) {
-      console.error('Error loading AI chat from Supabase:', error.message);
+      console.error('Error loading AI chat:', error.message);
       return loadLocalFallback(userId);
     }
 
@@ -37,22 +36,19 @@ export async function loadAiChat(userId: string): Promise<AiMessage[]> {
   }
 }
 
-// Append/Save new message to Supabase database
 export async function appendAiMessage(userId: string, role: 'user' | 'assistant', content: string): Promise<AiMessage[]> {
   try {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from('ai_messages')
       .insert([
         { user_id: userId, role, content }
-      ])
-      .select('id, role, content, created_at');
+      ]);
 
     if (error) {
-      console.error('Error saving AI message to Supabase:', error.message);
+      console.error('Error saving AI message:', error.message);
       return appendLocalFallback(userId, role, content);
     }
 
-    // Reload full history after successful insert
     return await loadAiChat(userId);
   } catch (err) {
     console.error('Exception saving AI message:', err);
@@ -60,22 +56,16 @@ export async function appendAiMessage(userId: string, role: 'user' | 'assistant'
   }
 }
 
-// Clear chat history for user
 export async function clearAiChat(userId: string): Promise<void> {
   try {
-    const { error } = await supabase
+    await supabase
       .from('ai_messages')
       .delete()
       .eq('user_id', userId);
-
-    if (error) {
-      console.error('Error clearing chat from Supabase:', error.message);
-    }
   } catch (err) {
     console.error('Exception clearing AI chat:', err);
   }
   
-  // Also clear local storage fallback
   try {
     localStorage.removeItem(`snapreel_ai_chat_${userId}`);
   } catch (e) {
@@ -83,7 +73,6 @@ export async function clearAiChat(userId: string): Promise<void> {
   }
 }
 
-// Fallback methods using localStorage in case Supabase is unreachable
 function getLocalKey(userId: string): string {
   return `snapreel_ai_chat_${userId}`;
 }
