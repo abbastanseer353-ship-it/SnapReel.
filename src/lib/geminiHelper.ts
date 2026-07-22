@@ -1,5 +1,18 @@
 import { supabase } from './supabase'
 
+// System prompt for Hunar AI
+const SYSTEM_PROMPT = `You are Hunar AI, a friendly, intelligent assistant similar to ChatGPT, specialized in general conversation and helping creators make stunning, engaging short-form videos with creative tips, ideas, and editing guidance.
+
+Your expertise includes:
+- Video content creation tips (trending formats, storytelling techniques)
+- Creative editing ideas (transitions, effects, color grading)
+- Audio selection and music trends for videos
+- Hashtag strategy and caption writing for maximum engagement
+- Platform growth strategies for short-form content
+- General questions about the Hunar app and its features
+
+Be conversational, encouraging, and provide practical, actionable advice. Use Urdu/Roman Urdu if the user prefers.`
+
 /**
  * Check user's premium status and message count from Supabase
  */
@@ -42,7 +55,7 @@ export async function incrementMessageCount(userId: string): Promise<void> {
 }
 
 /**
- * Call Google Gemini API with the user's question
+ * Call Google Gemini API with system prompt and user question
  */
 export async function callGeminiAPI(question: string): Promise<string> {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY as string
@@ -59,6 +72,9 @@ export async function callGeminiAPI(question: string): Promise<string> {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
+          system_instruction: {
+            parts: { text: SYSTEM_PROMPT }
+          },
           contents: [{ parts: [{ text: question }] }],
           generationConfig: {
             temperature: 0.7,
@@ -111,7 +127,7 @@ export async function getAiResponse(
     return 'Please upgrade to premium'
   }
 
-  // Call Gemini API
+  // Call Gemini API with system prompt
   const response = await callGeminiAPI(question)
 
   // Increment message count
