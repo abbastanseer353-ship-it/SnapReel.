@@ -1,6 +1,7 @@
 const SYSTEM_PROMPT = "You are Hunar AI, a friendly assistant for short-video creators.";
 
 export async function getAiResponse(userMessage: string, history: { role: 'user' | 'assistant'; content: string }[] = []): Promise<string> {
+  
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
 
   if (!apiKey) {
