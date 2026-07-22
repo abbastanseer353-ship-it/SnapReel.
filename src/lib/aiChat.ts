@@ -89,8 +89,14 @@ export async function appendAiMessage(
   return msg
 }
 
+/**
+ * Clear all AI chat history for a user (Supabase + localStorage)
+ */
 export async function clearAiChat(userId: string): Promise<void> {
+  // Delete from Supabase
   await supabase.from('ai_messages').delete().eq('user_id', userId)
+  
+  // Delete from localStorage
   try {
     localStorage.removeItem(localKey(userId))
   } catch {
