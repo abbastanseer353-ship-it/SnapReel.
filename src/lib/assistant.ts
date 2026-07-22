@@ -1,3 +1,5 @@
+import { getAiResponse } from './geminiHelper'
+
 export interface AssistantTopic {
   id: string
   keywords: string[]
@@ -9,6 +11,8 @@ export interface AssistantTopic {
  * what the app does and where each feature lives. Works fully offline (no
  * external API needed). Matching is keyword/intent based and supports English,
  * Urdu and roman-urdu phrasing.
+ * 
+ * NOTE: This is kept for fallback/reference. Main AI responses now use Google Gemini API.
  */
 export const topics: AssistantTopic[] = [
   {
@@ -18,7 +22,7 @@ export const topics: AssistantTopic[] = [
       'introduction', 'intro', 'batao app', 'app kya', 'app ke bare',
     ],
     answer:
-      'Hunar ek TikTok-jaisi video app hai jis mein ek "Earning" marketplace bhi hai. Aap videos bana/upload kar sakte hain, like/comment/follow kar sakte hain, aur "Earning" section mein client/worker skills share kar ke chat kar sakte hain. Neeche 5 tabs hain: Home (feed), Earning, + (video banao), Inbox (chat), aur Me (profile).',
+      'Hunar ek TikTok-jaisi video app hai jis mein ek "Earning" marketplace bhi hai. Aap videos bana/upload kar sakte hain, like/comment/follow kar sakte hain, aur "Earning" section mein client/worker ban sakte hain.',
   },
   {
     id: 'feed',
@@ -27,7 +31,7 @@ export const topics: AssistantTopic[] = [
       'homepage', 'ghar', 'videos dekhna',
     ],
     answer:
-      'Home tab (🏠) aapki video feed hai — TikTok jaisa upar-neeche scroll. Video par tap kar ke play/pause hota hai. Right side par ❤️ like, 💬 comment aur ✉️ chat ke buttons hain. Creator ke avatar par tap kar ke uski profile khulti hai.',
+      'Home tab (🏠) aapki video feed hai — TikTok jaisa upar-neeche scroll. Video par tap kar ke play/pause hota hai. Right side par ❤️ like, 💬 comment aur ✉️ chat ke buttons hain.',
   },
   {
     id: 'create',
@@ -37,7 +41,7 @@ export const topics: AssistantTopic[] = [
       'record page',
     ],
     answer:
-      'Neeche beech wala + button dabao to Creator Studio khulta hai. Wahan camera se record karo ya gallery se video import karo, left/right swipe kar ke filters lagao, aur music choose karo. Video ban-ne ke baad Edit page khulta hai.',
+      'Neeche beech wala + button dabao to Creator Studio khulta hai. Wahan camera se record karo ya gallery se video import karo, left/right swipe kar ke filters lagao, aur music choose karo.',
   },
   {
     id: 'filters',
@@ -46,13 +50,13 @@ export const topics: AssistantTopic[] = [
       'color', 'black white', 'vintage', 'b&w',
     ],
     answer:
-      'Record aur Edit dono par filters hain (Normal, Vivid, Warm, Cool, Vintage, B&W, Noir, Fade, Dramatic, Dreamy, Invert). Snapchat jaisa left/right swipe ya neeche chips par tap kar ke filter badlo. Filter video mein bake ho kar save hota hai.',
+      'Record aur Edit dono par filters hain (Normal, Vivid, Warm, Cool, Vintage, B&W, Noir, Fade, Dramatic, Dreamy, Invert). Snapchat jaisa left/right swipe ya neeche chips par tap kar ke filter lagao.',
   },
   {
     id: 'music',
     keywords: ['music', 'song', 'sound', 'gaana', 'track', 'audio', 'awaz'],
     answer:
-      'Record aur Edit par music ka option hai — bundled royalty-free tracks (Chill, Energetic, Lofi). Record karte waqt music baj-ta hai taake aap uske hisaab se acting kar sakein, aur woh video ke saath mix ho jata hai. Volume/mute Edit page par control hota hai.',
+      'Record aur Edit par music ka option hai — bundled royalty-free tracks (Chill, Energetic, Lofi). Record karte waqt music bajta hai taake aap uske hisaab se acting kar sakein.',
   },
   {
     id: 'edit',
@@ -61,7 +65,7 @@ export const topics: AssistantTopic[] = [
       'volume', 'cover', 'thumbnail', 'kaat', 'editor',
     ],
     answer:
-      'Edit page (CapCut-inspired) par: trim (start/end kaato), speed (0.5x–2x), volume/mute, filter, aur draggable text overlays (rang aur size ke saath) laga sakte ho. Cover/thumbnail ka time bhi choose hota hai. Phir "Save to gallery", "Draft", ya "Next" karo.',
+      'Edit page (CapCut-inspired) par: trim (start/end kaato), speed (0.5x–2x), volume/mute, filter, aur draggable text overlays (rang aur size ke saath) laga sakte ho.',
   },
   {
     id: 'post',
@@ -70,13 +74,13 @@ export const topics: AssistantTopic[] = [
       'next', 'privacy', 'visibility', 'comments off', 'description',
     ],
     answer:
-      'Edit ke baad Post page: caption likho (#hashtag aur @mention khud chips ban jate hain), link aur location lagao, visibility (Public/Followers) chuno, aur comments on/off karo. Neeche do buttons: Draft (baad ke liye save) aur Upload (Cloudinary par publish + feed mein aa jati hai).',
+      'Edit ke baad Post page: caption likho (#hashtag aur @mention khud chips ban jate hain), link aur location lagao, visibility (Public/Followers) chuno, aur comments on/off karo.',
   },
   {
     id: 'drafts',
     keywords: ['draft', 'drafts', 'save karo', 'baad mein', 'unfinished', 'gallery'],
     answer:
-      'Drafts aapke phone (browser) mein IndexedDB par save hote hain — internet ke bina bhi. Creator Studio ke Drafts section se koi bhi draft resume ya delete kar sakte ho. "Save to gallery" video ko download bhi kar deta hai.',
+      'Drafts aapke phone (browser) mein IndexedDB par save hote hain — internet ke bina bhi. Creator Studio ke Drafts section se koi bhi draft resume ya delete kar sakte ho.',
   },
   {
     id: 'earning',
@@ -86,7 +90,7 @@ export const topics: AssistantTopic[] = [
       'budget', 'gig',
     ],
     answer:
-      'Earning tab (💼) ek skill marketplace hai. Log do tarah ke posts lagate hain: "Offer" (main ye skill deta hoon) aur "Request" (mujhe ye kaam karwana hai) — category aur budget ke saath. Filter kar ke posts dhundo aur poster se seedha chat shuru karo.',
+      'Earning tab (💼) ek skill marketplace hai. Log do tarah ke posts lagate hain: "Offer" (main ye skill deta hoon) aur "Request" (mujhe ye kaam karwana hai).',
   },
   {
     id: 'chat',
@@ -95,7 +99,7 @@ export const topics: AssistantTopic[] = [
       'reply', 'text message', 'conversation',
     ],
     answer:
-      'Inbox tab (💬) aapki saari chats dikhata hai, unread badge ke saath. Kisi ki profile ya video se "Message" dabao to 1-to-1 chat khulti hai. Messages real-time (Supabase Realtime) se aati hain aur time-stamp ke saath dikhti hain.',
+      'Inbox tab (💬) aapki saari chats dikhata hai. Kisi ki profile ya video se "Message" dabao to 1-to-1 chat khulti hai. Messages real-time Supabase se aati hain.',
   },
   {
     id: 'profile',
@@ -104,13 +108,13 @@ export const topics: AssistantTopic[] = [
       'followers', 'following', 'meri profile',
     ],
     answer:
-      'Me tab (👤) aapki profile hai: avatar, naam, role (Client/Worker/Both), bio, skills, aur video grid. "Edit profile" se sab kuch badlo. Upar-right gear (⚙️) se Settings khulti hai, aur "Ask AI" button se yeh assistant.',
+      'Me tab (👤) aapki profile hai: avatar, naam, role (Client/Worker/Both), bio, skills, aur video grid. "Edit profile" se sab kuch badlo.',
   },
   {
     id: 'settings',
     keywords: ['settings', 'setting', 'gear', 'help', 'guide', 'info', 'maloomat', 'about app'],
     answer:
-      'Settings profile ke upar-right ⚙️ button se khulti hai. Wahan app ka poora guide (har page kya karta hai), account options (log out), aur app ke bare mein maloomat milti hai.',
+      'Settings profile ke upar-right ⚙️ button se khulti hai. Wahan app ka poora guide, account options (log out), aur app ke bare mein maloomat milti hai.',
   },
   {
     id: 'offline',
@@ -119,19 +123,19 @@ export const topics: AssistantTopic[] = [
       'download video', 'dobara dekho', 'no internet', 'cache',
     ],
     answer:
-      'Jo videos aap dekhte hain woh khud-ba-khud "Offline" mein save ho jati hain (aapke browser mein). Internet na ho tab bhi Profile ke "Offline" tab se woh videos dobara dekh sakte hain. Purani videos apne aap hat jati hain taake jagah bachi rahe.',
+      'Jo videos aap dekhte hain woh khud-ba-khud "Offline" mein save ho jati hain. Internet na ho tab bhi Profile ke "Offline" tab se woh videos dobara dekh sakte hain.',
   },
   {
     id: 'likes',
     keywords: ['like', 'comment', 'follow', 'unfollow', 'heart', 'pasand'],
     answer:
-      'Feed par ❤️ se like, 💬 se comment, aur creator ki profile par jaa kar Follow/Unfollow karo. Yeh sab Supabase mein save hota hai, isliye reload ke baad bhi rehta hai.',
+      'Feed par ❤️ se like, 💬 se comment, aur creator ki profile par jaa kar Follow/Unfollow karo. Yeh sab Supabase mein save hota hai.',
   },
   {
     id: 'account',
     keywords: ['login', 'signup', 'sign up', 'log out', 'logout', 'password', 'account banao'],
     answer:
-      'Signup/Login Supabase Auth se hota hai. Log out Profile page (ya Settings) se hota hai. Aapka data (profile, videos, likes, chats) Supabase mein aur video files Cloudinary mein save hote hain.',
+      'Signup/Login Supabase Auth se hota hai. Log out Profile page (ya Settings) se hota hai. Aapka data Supabase mein aur video files Cloudinary mein save hote hain.',
   },
   {
     id: 'greeting',
@@ -147,13 +151,13 @@ export const topics: AssistantTopic[] = [
 ]
 
 const FALLBACK =
-  'Main Hunar ka guide hoon. Aap in mein se kisi ke bare mein pooch sakte hain: video banana (Creator Studio), filters & music, editing, caption/hashtag/mention, Earning marketplace, chat, profile, settings, ya offline videos. Misaal: "video kaise upload karun?"'
+  'Main Hunar ka guide hoon. Aap app ke kisi bhi feature ke bare mein pooch sakte hain.'
 
 function normalize(text: string): string {
   return text.toLowerCase().replace(/[^\w\u0600-\u06FF\s]/g, ' ')
 }
 
-/** Returns the best-matching answer for a free-form question. */
+/** Returns the best-matching answer for a free-form question (keyword-based fallback). */
 export function askAssistant(question: string): string {
   const q = ' ' + normalize(question) + ' '
   let best: { topic: AssistantTopic; score: number } | null = null
@@ -173,6 +177,13 @@ export function askAssistant(question: string): string {
   }
 
   return best ? best.topic.answer : FALLBACK
+}
+
+/**
+ * Get AI response using Google Gemini API with premium/quota checking
+ */
+export async function getAssistantResponse(userId: string, question: string): Promise<string> {
+  return getAiResponse(userId, question)
 }
 
 export const suggestedQuestions = [
