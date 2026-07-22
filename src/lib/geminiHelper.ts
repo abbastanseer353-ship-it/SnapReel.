@@ -1,18 +1,16 @@
-const SYSTEM_PROMPT = "You are Hunar AI, a friendly, intelligent assistant specialized in general conversation and helping creators make engaging short-form videos.";
+const SYSTEM_PROMPT = "You are Hunar AI, a friendly assistant for short-video creators.";
 
 export async function getAiResponse(userMessage: string, history: { role: 'user' | 'assistant'; content: string }[] = []): Promise<string> {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
 
   if (!apiKey) {
-    throw new Error("Gemini API key is missing.");
+    throw new Error("VITE_GEMINI_API_KEY is missing in Vercel settings.");
   }
 
-  const contents = history.map(function(msg) {
-    return {
-      role: msg.role === 'assistant' ? 'model' : 'user',
-      parts: [{ text: msg.content }]
-    };
-  });
+  const contents = history.map((msg) => ({
+    role: msg.role === 'assistant' ? 'model' : 'user',
+    parts: [{ text: msg.content }]
+  }));
 
   contents.push({
     role: 'user',
@@ -30,14 +28,14 @@ export async function getAiResponse(userMessage: string, history: { role: 'user'
 
   if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.error && errorData.error.message ? errorData.error.message : "Error calling Gemini API.");
+    throw new Error(errorData.error?.message || "Gemini API error.");
   }
 
   const data = await response.json();
-  const text = data.candidates && data.candidates[0] && data.candidates[0].content && data.candidates[0].content.parts[0].text;
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
 
   if (!text) {
-    throw new Error("No response received from Gemini.");
+    throw new Error("No response from AI.");
   }
 
   return text;
