@@ -4,10 +4,9 @@ export async function getAiResponse(userMessage: string, history: { role: 'user'
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
 
   if (!apiKey) {
-    throw new Error("Gemini API key is missing. Please check your Vercel environment variables.");
+    throw new Error("Gemini API key is missing.");
   }
 
-  // Format history for Gemini API using gemini-1.5-flash
   const contents = history.map(msg => ({
     role: msg.role === 'assistant' ? 'model' : 'user',
     parts: [{ text: msg.content }]
@@ -18,15 +17,12 @@ export async function getAiResponse(userMessage: string, history: { role: 'user'
     parts: [{ text: userMessage }]
   });
 
+  // Direct gemini-1.5-flash endpoint
   const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      system_instruction: {
-        parts: [{ text: SYSTEM_PROMPT }]
-      },
+      system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
       contents: contents,
     }),
   });
