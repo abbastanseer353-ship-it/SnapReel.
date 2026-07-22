@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
-import { askAssistant, suggestedQuestions } from '../lib/assistant'
+import { suggestedQuestions, getAssistantResponse } from '../lib/assistant'
 import { appendAiMessage, clearAiChat, loadAiChat } from '../lib/aiChat'
 import type { AiMessage } from '../lib/aiChat'
 
@@ -35,13 +35,26 @@ export default function Assistant() {
     setMessages((prev) => [...prev, userMsg])
     setTimeout(scrollToBottom, 30)
 
-    const answer = askAssistant(q)
-    // small delay so it reads like a reply, not an instant echo
-    await new Promise((r) => setTimeout(r, 350))
-    const aiMsg = await appendAiMessage(user.id, 'assistant', answer)
-    setMessages((prev) => [...prev, aiMsg])
-    setThinking(false)
-    setTimeout(scrollToBottom, 30)
+    try {
+      // Get AI response using Gemini API with premium/quota checking
+      const answer = await getAssistantResponse(user.id, q)
+      
+      // small delay so it reads like a reply, not an instant echo
+      await new Promise((r) => setTimeout(r, 350))
+      const aiMsg = await appendAiMessage(user.id, 'assistant', answer)
+      setMessages((prev) => [...prev, aiMsg])
+    } catch (error) {
+      console.error('Error getting AI response:', error)
+      const errorMsg = await appendAiMessage(
+        user.id,
+        'assistant',
+        'An error occurred while processing your request. Please try again.'
+      )
+      setMessages((prev) => [...prev, errorMsg])
+    } finally {
+      setThinking(false)
+      setTimeout(scrollToBottom, 30)
+    }
   }
 
   const onSubmit = (e: React.FormEvent) => {
